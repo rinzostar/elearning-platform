@@ -1,0 +1,203 @@
+.sidebar {
+  width: var(--sidebar-width-expanded);
+  height: 100vh;
+  background-color: var(--color-sidebar-bg);
+  transition: width var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-surface-hover);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+.header {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.toggleBtn:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.logoText {
+  margin-left: var(--space-sm);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.collapsed .logoText {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: 0 var(--space-sm);
+  flex-grow: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.navItem:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: 500;
+}
+
+.navIcon {
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+}
+
+.active .navIcon {
+  color: var(--color-primary);
+}
+
+.navLabel {
+  margin-left: var(--space-md);
+  opacity: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.collapsed .navLabel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.footer {
+  padding: var(--space-md) var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.profileItem {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.profileItem:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  margin-left: 4px;
+}
+
+.profileName {
+  margin-left: var(--space-md);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.collapsed .profileName {
+  display: none;
+}
+
+.profileWrapper {
+  position: relative;
+}
+
+.profileMenu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-xs) 0;
+  min-width: 180px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+}
+
+.profileMenuItem {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.profileMenuItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.profileMenuItem.danger {
+  color: var(--color-danger);
+}
+
+.profileMenuItem.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}

@@ -1,0 +1,158 @@
+.container {
+  padding: var(--space-md);
+}
+.breadcrumb {
+  margin-bottom: var(--space-lg);
+}
+.breadcrumb a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: color var(--transition-fast);
+}
+.breadcrumb a:hover {
+  color: var(--color-primary);
+}
+.headerArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-xl);
+}
+.pageTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+.pageSubtitle {
+  color: var(--color-text-secondary);
+}
+.manageBtn {
+  padding: 10px 16px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.manageBtn:hover {
+  background-color: var(--color-primary-light);
+}
+
+.subjectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+.subjectCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-surface-hover);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+}
+.subjectCard:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.subjectTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+.subjectDesc {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+  flex-grow: 1;
+}
+.professorBadge {
+  display: inline-block;
+  background-color: var(--color-accent-blue);
+  color: var(--color-primary-dark);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  align-self: flex-start;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modalContent {
+  background: var(--color-surface);
+  width: 100%;
+  max-width: 500px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+.modalTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+.closeModalBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.formGroup {
+  margin-bottom: var(--space-md);
+}
+.label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+}
+.input, .select, .textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+.submitBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+.submitBtn:hover {
+  background: var(--color-primary-dark);
+}
+.dangerBtn {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  padding: 4px;
+  margin-left: auto;
+}
