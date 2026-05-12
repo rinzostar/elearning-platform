@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import styles from './subject.module.css';
-import { FiX, FiTrash2, FiPlayCircle, FiFileText, FiBookOpen, FiEdit2, FiHeart } from 'react-icons/fi';
+import { FiX, FiTrash2, FiPlayCircle, FiFileText, FiBookOpen, FiEdit2, FiHeart, FiCamera, FiMic } from 'react-icons/fi';
+import { useDeviceStore } from '@/lib/store/useDeviceStore';
 
 export default function SubjectClient({ params }: { params: any }) {
   const { facultyId, degreeId, yearId, semesterId, subjectId } = params;
@@ -29,6 +30,26 @@ export default function SubjectClient({ params }: { params: any }) {
   const [existingAttachmentUrl, setExistingAttachmentUrl] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { videoDeviceId, audioDeviceId, setVideoDeviceId, setAudioDeviceId } = useDeviceStore();
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+
+  useEffect(() => {
+    const getDevices = async () => {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+          .then(stream => stream.getTracks().forEach(t => t.stop()))
+          .catch(() => {});
+        const deviceInfos = await navigator.mediaDevices.enumerateDevices();
+        setDevices(deviceInfos);
+      } catch (err) {
+        console.error('Error fetching devices:', err);
+      }
+    };
+    if (isModalOpen && courseType === 'live') {
+      getDevices();
+    }
+  }, [isModalOpen, courseType]);
 
   const subjectsStorageKey = `lumina_subjects_${facultyId}_${normalizedDegreeId}_${yearId}_${semesterId}`;
 
@@ -207,8 +228,24 @@ export default function SubjectClient({ params }: { params: any }) {
   const handleRemoveCourse = async (e: React.MouseEvent, id: string) => {
     e.preventDefault(); 
     if (confirm('Are you sure you want to remove this course/module?')) {
-      const { error } = await supabase.from('courses').delete().eq('id', id);
-      if (!error) setCourses(prev => prev.filter(c => c.id !== id));
+      if (id.startsWith('course-local-')) {
+        // Handle local storage deletion
+        const savedCourses = localStorage.getItem('lumina_local_courses');
+        if (savedCourses) {
+          const coursesList = JSON.parse(savedCourses);
+          const updatedList = coursesList.filter((c: any) => c.id !== id);
+          localStorage.setItem('lumina_local_courses', JSON.stringify(updatedList));
+          setCourses(prev => prev.filter(c => c.id !== id));
+        }
+      } else {
+        // Handle Supabase deletion
+        const { error } = await supabase.from('courses').delete().eq('id', id);
+        if (!error) {
+          setCourses(prev => prev.filter(c => c.id !== id));
+        } else {
+          alert('Failed to delete from database: ' + error.message);
+        }
+      }
     }
   };
 
@@ -342,12 +379,53 @@ export default function SubjectClient({ params }: { params: any }) {
                 )}
 
                 {courseType === 'live' && (
-                  <div className={styles.formGroup} style={{ background: 'var(--color-bg)', padding: '16px', borderRadius: '8px', textAlign: 'center' }}>
-                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                      You are creating a Live Streaming Session.
+                  <div className={styles.formGroup} style={{ background: 'var(--color-bg)', padding: '16px', borderRadius: '8px', textAlign: 'left' }}>
+                    <p style={{ color: 'var(--color-text-primary)', fontWeight: 600, marginBottom: '12px' }}>
+                      Live Session Settings
                     </p>
-                    <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-                      When you enter this module, your camera and microphone will be automatically connected via LiveKit.
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', marginBottom: '4px', color: 'var(--color-text-secondary)' }}>
+                          <FiCamera size={14} color="var(--color-primary)" /> Default Camera
+                        </label>
+                        <select 
+                          className={styles.input} 
+                          style={{ padding: '8px' }}
+                          value={videoDeviceId || ''}
+                          onChange={(e) => setVideoDeviceId(e.target.value)}
+                        >
+                          <option value="">System Default</option>
+                          {devices.filter(d => d.kind === 'videoinput').map(device => (
+                            <option key={device.deviceId} value={device.deviceId}>
+                              {device.label || `Camera ${device.deviceId.slice(0, 5)}...`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', marginBottom: '4px', color: 'var(--color-text-secondary)' }}>
+                          <FiMic size={14} color="var(--color-primary)" /> Default Microphone
+                        </label>
+                        <select 
+                          className={styles.input}
+                          style={{ padding: '8px' }}
+                          value={audioDeviceId || ''}
+                          onChange={(e) => setAudioDeviceId(e.target.value)}
+                        >
+                          <option value="">System Default</option>
+                          {devices.filter(d => d.kind === 'audioinput').map(device => (
+                            <option key={device.deviceId} value={device.deviceId}>
+                              {device.label || `Microphone ${device.deviceId.slice(0, 5)}...`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '12px' }}>
+                      These settings are saved to your profile and will be used when you join the session.
                     </p>
                   </div>
                 )}

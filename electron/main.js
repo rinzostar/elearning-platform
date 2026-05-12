@@ -15,6 +15,16 @@ function createWindow(port) {
     },
   });
 
+  // Handle permission requests for camera and microphone
+  win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'notifications'];
+    if (allowedPermissions.includes(permission)) {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     const appUrl = app.isPackaged ? `http://localhost:35412` : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
     const appOrigin = new URL(appUrl).origin;

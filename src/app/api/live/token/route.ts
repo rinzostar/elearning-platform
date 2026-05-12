@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(req: NextRequest) {
   const room = req.nextUrl.searchParams.get('room');
   const username = req.nextUrl.searchParams.get('username');
+  const isProfessor = req.nextUrl.searchParams.get('isProfessor') === 'true';
 
   if (!room) {
     return NextResponse.json({ error: 'Missing "room" query parameter' }, { status: 400 });
@@ -23,7 +24,13 @@ export async function GET(req: NextRequest) {
     identity: username,
   });
 
-  at.addGrant({ roomJoin: true, room: room, canPublish: true, canSubscribe: true });
+  at.addGrant({ 
+    roomJoin: true, 
+    room: room, 
+    canPublish: isProfessor, 
+    canSubscribe: true,
+    canPublishData: true // allow everyone to chat
+  });
 
   return NextResponse.json({ token: await at.toJwt() });
 }

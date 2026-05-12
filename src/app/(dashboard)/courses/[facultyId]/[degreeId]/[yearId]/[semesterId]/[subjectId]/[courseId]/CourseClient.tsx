@@ -14,6 +14,7 @@ export default function CourseClient({ params }: { params: any }) {
   const [course, setCourse] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [subjectDetails, setSubjectDetails] = useState<any>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -26,9 +27,9 @@ export default function CourseClient({ params }: { params: any }) {
   useEffect(() => {
     const fetchCourse = async () => {
       // 1. Try Supabase
-      const { data, error } = await supabase.from('courses').select('*').eq('id', courseId).single();
-      if (!error && data) {
-        setCourse(data);
+      const { data: courseData, error: courseError } = await supabase.from('courses').select('*').eq('id', courseId).single();
+      if (!courseError && courseData) {
+        setCourse(courseData);
       } else {
         // 2. Try Local Storage fallback
         const savedLocal = localStorage.getItem('lumina_local_courses');
@@ -38,6 +39,19 @@ export default function CourseClient({ params }: { params: any }) {
           if (found) setCourse(found);
         }
       }
+
+      // Fetch Subject to determine permissions
+      if (subjectId && !subjectId.toString().startsWith('local-')) {
+        const { data: subjData } = await supabase.from('subjects').select('*').eq('id', subjectId).single();
+        if (subjData) setSubjectDetails(subjData);
+      } else {
+        const savedSubjects = localStorage.getItem('lumina_local_subjects');
+        if (savedSubjects) {
+          const subj = JSON.parse(savedSubjects).find((s: any) => s.id === subjectId);
+          if (subj) setSubjectDetails(subj);
+        }
+      }
+
       setIsLoaded(true);
     };
     fetchCourse();
@@ -111,14 +125,34 @@ export default function CourseClient({ params }: { params: any }) {
           </div>
         )}
         
-        {course.type === 'live' && (
-          <div style={{ marginTop: 'var(--space-md)', height: '70vh', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-            <LiveRoom 
-              roomId={courseId} 
-              username={currentUser?.name || 'Guest Student'} 
-            />
+        {course.type === 'live' && course.recordedUrl ? (
+          <div className={styles.videoContainer}>
+            <div style={{ marginBottom: 'var(--space-md)', padding: 'var(--space-sm) var(--space-md)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary-dark)', borderRadius: 'var(--radius-md)', fontSize: '14px', fontWeight: 600, display: 'inline-block' }}>
+              🔴 This session has ended. You are watching the recording.
+            </div>
+            <video src={course.recordedUrl} controls className={styles.videoElement} style={{ width: '100%', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)' }} />
           </div>
-        )}
+        ) : course.type === 'live' && course.isEnded ? (
+          <div style={{ marginTop: 'var(--space-md)', height: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-surface-hover)' }}>
+            <FiPlayCircle size={48} color="var(--color-text-muted)" style={{ marginBottom: '16px' }} />
+            <h3 style={{ color: 'var(--color-text-primary)' }}>This live session has ended</h3>
+            <p style={{ color: 'var(--color-text-secondary)', marginTop: '8px' }}>The recording is currently being processed and will be available here shortly.</p>
+          </div>
+        ) : course.type === 'live' && (() => {
+          const isAdmin = currentUser?.role === 'Admin';
+          const isLeader = subjectDetails && currentUser?.email === subjectDetails.professorEmail;
+          const isProfessor = isAdmin || isLeader;
+          
+          return (
+            <div style={{ marginTop: 'var(--space-md)', height: '70vh', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+              <LiveRoom 
+                roomId={courseId} 
+                username={currentUser?.name || 'Guest Student'} 
+                isProfessor={isProfessor}
+              />
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
