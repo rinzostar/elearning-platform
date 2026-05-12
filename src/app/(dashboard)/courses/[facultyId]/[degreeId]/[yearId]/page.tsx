@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import styles from './semester.module.css';
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const semestersData = {
   licence: {
     '1': [
@@ -43,7 +47,7 @@ const semestersData = {
   }
 };
 
-export const dynamic = 'force-dynamic';
+
 
 export default async function YearLevelPage({ params }) {
   const { facultyId, degreeId, yearId } = await params;

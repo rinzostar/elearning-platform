@@ -8,10 +8,46 @@
     "electron-dev": "electron .",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "export": "next build",
+    "pack": "next build && electron-builder",
+    "dist": "next build && electron-builder --publish=never "
+  },
+  "build": {
+    "appId": "com.lumina.elearning",
+    "productName": "Lumina Learning",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      {
+        "from": ".next/standalone",
+        "to": "standalone"
+      },
+      {
+        "from": ".next/static",
+        "to": "standalone/.next/static"
+      },
+      {
+        "from": "public",
+        "to": "standalone/public"
+      },
+      "electron/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "standalone/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    }
   },
   "dependencies": {
     "@livekit/components-react": "^2.9.20",
+    "@livekit/components-styles": "^1.2.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.105.1",
     "date-fns": "^4.1.0",

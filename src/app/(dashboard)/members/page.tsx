@@ -3,24 +3,20 @@
 import { useState, useEffect } from 'react';
 import styles from './members.module.css';
 import { FiPlus, FiX, FiTrash2 } from 'react-icons/fi';
+import { createClient } from '@/lib/supabase/client';
 
 type Member = {
   id: string;
   name: string;
   email: string;
-  role: 'Student' | 'Professor';
+  role: 'Student' | 'Professor' | 'Admin';
   dob?: string;
+  status?: string;
 };
-
-const DUMMY_MEMBERS: Member[] = [
-  { id: '1', name: 'Alice Smith', email: 'alice.smith@university.edu', role: 'Professor' },
-  { id: '2', name: 'Bob Johnson', email: 'bob.j@student.edu', role: 'Student' },
-  { id: '3', name: 'Charlie Davis', email: 'c.davis@student.edu', role: 'Student' }
-];
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'All' | 'Student' | 'Professor'>('All');
   
   // Modal state
@@ -31,21 +27,38 @@ export default function MembersPage() {
   const [newMemberDob, setNewMemberDob] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<'Student' | 'Professor'>('Student');
 
-  useEffect(() => {
-    const saved = localStorage.getItem('lumina_members');
-    if (saved) {
-      setMembers(JSON.parse(saved));
-    } else {
-      setMembers(DUMMY_MEMBERS);
-    }
-    setIsLoaded(true);
-  }, []);
+  const supabase = createClient();
 
   useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('lumina_members', JSON.stringify(members));
+    fetchMembers();
+  }, []);
+
+  async function fetchMembers() {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase Error:', error.message);
+        console.error('Details:', error.details);
+        
+        // Fallback to local storage if Supabase table isn't ready
+        const savedMembers = localStorage.getItem('lumina_members');
+        if (savedMembers) {
+          console.log('Falling back to local storage members');
+          setMembers(JSON.parse(savedMembers));
+        }
+      } else {
+        setMembers(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching members:', err);
     }
-  }, [members, isLoaded]);
+    setIsLoading(false);
+  }
 
   const filteredMembers = members.filter(m => activeTab === 'All' || m.role === activeTab);
 
@@ -63,34 +76,60 @@ export default function MembersPage() {
     setNewMemberName(member.name);
     setNewMemberEmail(member.email);
     setNewMemberDob(member.dob || '');
-    setNewMemberRole(member.role);
+    setNewMemberRole(member.role as 'Student' | 'Professor');
     setIsModalOpen(true);
   };
 
-  const handleSaveMember = (e: React.FormEvent) => {
+  const handleSaveMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMemberName || !newMemberEmail || !newMemberDob) return;
 
-    const memberData: Member = {
-      id: editMemberId || Date.now().toString(),
+    const memberData = {
       name: newMemberName,
       email: newMemberEmail,
       role: newMemberRole,
-      dob: newMemberDob
+      dob: newMemberDob,
+      status: 'Active'
     };
 
     if (editMemberId) {
-      setMembers(prev => prev.map(m => m.id === editMemberId ? memberData : m));
+      const { error } = await supabase
+        .from('profiles')
+        .update(memberData)
+        .eq('id', editMemberId);
+      
+      if (error) {
+        alert('Error updating member: ' + error.message);
+      } else {
+        fetchMembers();
+        setIsModalOpen(false);
+      }
     } else {
-      setMembers(prev => [memberData, ...prev]);
+      const { error } = await supabase
+        .from('profiles')
+        .insert([memberData]);
+      
+      if (error) {
+        alert('Error adding member: ' + error.message);
+      } else {
+        fetchMembers();
+        setIsModalOpen(false);
+      }
     }
-    
-    setIsModalOpen(false);
   };
 
-  const handleRemoveMember = (id: string) => {
+  const handleRemoveMember = async (id: string) => {
     if (confirm('Are you sure you want to remove this member?')) {
-      setMembers(prev => prev.filter(m => m.id !== id));
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        alert('Error removing member: ' + error.message);
+      } else {
+        setMembers(prev => prev.filter(m => m.id !== id));
+      }
     }
   };
 

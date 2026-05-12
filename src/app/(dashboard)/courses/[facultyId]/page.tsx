@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import styles from './degree.module.css';
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const degreeLevels = [
   {
     id: 'licence',
@@ -31,7 +35,7 @@ const degreeLevels = [
   }
 ];
 
-export const dynamic = 'force-dynamic';
+
 
 export default async function FacultyDegreesPage({ params }) {
   const { facultyId } = await params;

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiPlayCircle, FiFileText, FiBookOpen, FiHeart, FiBook, FiMessageCircle } from 'react-icons/fi';
+import { createClient } from '@/lib/supabase/client';
+import LiveDiscovery from '@/components/live/LiveDiscovery';
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -10,24 +12,40 @@ export default function Home() {
   const [favoriteSubjects, setFavoriteSubjects] = useState<any[]>([]);
   const [favoritePosts, setFavoritePosts] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
+    const fetchAllFavorites = async (email: string) => {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('userEmail', email);
+      
+      if (!error && data) {
+        // Filter subjects
+        const subjects = data.filter(f => f.type === 'subject').map(f => ({
+          id: f.courseId,
+          title: f.title,
+          url: f.url
+        }));
+        setFavoriteSubjects(subjects);
+
+        // Filter modules
+        const modules = data.filter(f => f.type !== 'subject');
+        setFavorites(modules);
+      }
+
+      // Still use localStorage for community posts for now
+      const postsKey = `lumina_favorite_posts_${email}`;
+      const savedPosts = localStorage.getItem(postsKey);
+      if (savedPosts) setFavoritePosts(JSON.parse(savedPosts));
+    };
+
     const userStr = localStorage.getItem('lumina_current_user');
     if (userStr) {
       const user = JSON.parse(userStr);
       setCurrentUser(user);
-      
-      const favKey = `lumina_favorites_${user.email}`;
-      const savedFavs = localStorage.getItem(favKey);
-      if (savedFavs) setFavorites(JSON.parse(savedFavs));
-
-      const subjKey = `lumina_favorite_subjects_${user.email}`;
-      const savedSubj = localStorage.getItem(subjKey);
-      if (savedSubj) setFavoriteSubjects(JSON.parse(savedSubj));
-
-      const postsKey = `lumina_favorite_posts_${user.email}`;
-      const savedPosts = localStorage.getItem(postsKey);
-      if (savedPosts) setFavoritePosts(JSON.parse(savedPosts));
+      fetchAllFavorites(user.email);
     }
     setIsLoaded(true);
   }, []);
@@ -48,6 +66,7 @@ export default function Home() {
 
   return (
     <div style={{ padding: 'var(--space-md)' }}>
+      <LiveDiscovery />
       <h1 style={{ fontSize: 'var(--font-size-hero)', fontWeight: 700, marginBottom: 'var(--space-md)' }}>
         Welcome, {currentUser?.name?.split(' ')[0] || 'Guest'}!
       </h1>

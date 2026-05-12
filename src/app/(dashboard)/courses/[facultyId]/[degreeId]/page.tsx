@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import styles from './year.module.css';
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const yearsData = {
   licence: [
     { id: '1', title: 'Licence 1', badge: 'L1', desc: 'First year foundational courses and core methodologies.' },
@@ -19,7 +23,7 @@ const yearsData = {
   ]
 };
 
-export const dynamic = 'force-dynamic';
+
 
 export default async function DegreeLevelPage({ params }) {
   const { facultyId, degreeId } = await params;
